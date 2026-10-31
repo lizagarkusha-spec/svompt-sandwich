@@ -1,0 +1,539 @@
+<!doctype html><html lang="ru">
+<meta charset="utf-8">
+<title>SVOMPT Sandwich</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one deli-counter column; the sandwich (S→T) is the rule, the tiles and the reward */
+:root{
+  --paper:#fffaf0; --card:#ffffff; --ink:#3b2416; --ink-soft:#7a5c47; --line:#ecdcc2;
+  --crust:#c9772b; --crust-deep:#8c4a1c; --good:#3f8f3a; --bad:#d2432f;
+  --S:#eaa53c; --V:#ffe17d; --O:#7a4126; --M:#a8d466; --P:#e5533d; --T:#ead2a9;
+  --S-ink:#3b2416; --V-ink:#3b2416; --O-ink:#fff; --M-ink:#25401a; --P-ink:#fff; --T-ink:#3b2416;
+  --display:"Lilita One","Rubik",system-ui,sans-serif;
+  --body:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background-image:linear-gradient(90deg,rgba(201,119,43,.05) 1px,transparent 1px),linear-gradient(rgba(201,119,43,.05) 1px,transparent 1px);
+  background-size:28px 28px;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--crust);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-block:8px 120px}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;align-items:center;gap:8px;padding-block:10px;border-bottom:2px dashed var(--line);margin-bottom:16px}
+.logo{font:28px/1 var(--display);color:var(--crust-deep);letter-spacing:.5px;margin-right:auto;background:none;border:0;padding:0;display:flex;align-items:center;gap:8px}
+.logo small{font:500 12px/1 var(--body);color:var(--ink-soft);letter-spacing:0}
+.ibtn{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:8px 10px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;min-height:42px}
+.ibtn:hover{border-color:var(--crust)}
+.ibtn .lbl{display:inline}
+@media (max-width:480px){.ibtn .lbl{display:none}.logo{font-size:24px}.logo small{display:none}}
+
+h1,h2,h3{text-wrap:balance;margin:0}
+.eyebrow{font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--crust)}
+
+/* rule poster */
+.poster{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 10px 0 -4px var(--line)}
+.poster h2{font:34px/1.05 var(--display);color:var(--crust-deep);margin:6px 0 4px}
+.poster p.lead{margin:0 0 14px;color:var(--ink-soft)}
+.stack{display:grid;gap:4px}
+.layer{display:grid;grid-template-columns:96px 44px minmax(0,1fr);align-items:center;gap:10px;padding:4px 0}
+.layer svg{width:96px;height:48px;display:block}
+.layer .let{font:40px/1 var(--display);text-align:center}
+.layer .what{min-width:0}
+.layer .en{font:22px/1 var(--display);letter-spacing:.3px}
+.layer .ru{font-size:14px;color:var(--ink-soft)}
+.layer .ru b{color:var(--ink)}
+.example{margin-top:16px;padding-top:14px;border-top:2px dashed var(--line)}
+.example .row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tip{margin-top:12px;font-size:14px;background:#fff4d8;border-radius:12px;padding:10px 12px}
+
+/* chips by layer */
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-weight:700;font-size:15px;line-height:1.2}
+.chip i{font-style:normal;font:13px/1 var(--display);opacity:.8}
+.k-S{background:var(--S);color:var(--S-ink)} .k-V{background:var(--V);color:var(--V-ink)} .k-O{background:var(--O);color:var(--O-ink)}
+.k-M{background:var(--M);color:var(--M-ink)} .k-P{background:var(--P);color:var(--P-ink)} .k-T{background:var(--T);color:var(--T-ink)}
+.c-S{color:var(--S)} .c-V{color:#d7a714} .c-O{color:var(--O)} .c-M{color:#5c9a2a} .c-P{color:var(--P)} .c-T{color:#b98a4a}
+
+/* level choice */
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:20px}
+.lvl{text-align:left;border:2px solid var(--line);background:var(--card);border-radius:18px;padding:16px;display:grid;gap:6px}
+.lvl:hover{border-color:var(--crust);transform:translateY(-2px)}
+.lvl .t{font:24px/1.05 var(--display);color:var(--crust-deep)}
+.lvl .d{font-size:14px;color:var(--ink-soft)}
+.lvl .s{font-size:13px;font-weight:700;color:var(--good)}
+.resume{margin-top:12px;width:100%;border:0;background:var(--crust-deep);color:#fff;border-radius:14px;padding:14px;font-weight:700;font-size:16px}
+
+/* play */
+.prog{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.prog span{flex:1 1 12px;height:8px;border-radius:4px;background:var(--line);min-width:8px}
+.prog span.ok{background:var(--good)} .prog span.miss{background:var(--bad)} .prog span.now{background:var(--crust)}
+.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-soft);font-weight:500;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.task{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px}
+.task .ru{font-size:23px;font-weight:700;line-height:1.35;margin:6px 0 10px}
+.task .ru span{border-radius:8px;padding:0 3px;transition:background .25s}
+.hintbtn{border:0;background:#fff4d8;border-radius:10px;padding:6px 10px;font-size:14px;font-weight:700;color:var(--crust-deep)}
+.legend{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.legend .chip{font-size:12px;padding:3px 8px}
+
+.answer{min-height:64px;border:2px dashed var(--crust);border-radius:16px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin:14px 0 12px;background:#fffdf8}
+.answer:empty::before{content:"Нажимай на части ниже — они встанут сюда";color:var(--ink-soft);font-size:14px;align-self:center}
+.bank{display:flex;flex-wrap:wrap;gap:8px}
+.tile{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:10px 14px;font-weight:700;font-size:17px;min-height:46px;box-shadow:0 3px 0 var(--line);transition:transform .12s}
+.tile:active{transform:translateY(2px);box-shadow:none}
+.tile.used{visibility:hidden}
+.tile.wrong{border-color:var(--bad);box-shadow:0 3px 0 var(--bad);animation:shake .35s}
+.tile.colored{border-color:transparent;box-shadow:none}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+textarea{width:100%;min-height:96px;border:2px solid var(--line);border-radius:16px;padding:12px 14px;font:500 19px/1.4 var(--body);color:var(--ink);background:#fffdf8;resize:vertical;margin:14px 0 6px}
+textarea:focus{border-color:var(--crust);outline:none}
+.small{font-size:13px;color:var(--ink-soft)}
+
+.actions{position:fixed;left:0;right:0;bottom:0;z-index:6;background:linear-gradient(transparent,var(--paper) 30%);padding:18px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.actions .in{max-width:760px;margin:0 auto;display:flex;gap:10px}
+.btn{border:0;border-radius:14px;padding:15px 18px;font-weight:700;font-size:17px;min-height:54px}
+.btn.main{flex:1;background:var(--crust-deep);color:#fff;box-shadow:0 4px 0 #5e2f10}
+.btn.main:disabled{background:#cdb9a3;box-shadow:none;cursor:default}
+.btn.ghost{background:var(--card);border:2px solid var(--line)}
+.btn.okb{background:var(--good);box-shadow:0 4px 0 #2a6626}
+
+.fb{margin-top:14px;border-radius:16px;padding:14px;display:grid;gap:10px;animation:pop .25s}
+.fb.good{background:#e9f6e3;border:2px solid #b8dfa9}
+.fb.bad{background:#fdeae5;border:2px solid #f2bfb3}
+.fb.warn{background:#fff4d8;border:2px solid #f0d89a}
+.fb .h{font-weight:900;font-size:18px}
+.fb .row{display:flex;flex-wrap:wrap;gap:6px}
+.fb .links{display:flex;flex-wrap:wrap;gap:8px}
+.fb .links button{border:0;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px;font-weight:700;font-size:14px}
+@keyframes pop{from{transform:scale(.97);opacity:.4}to{transform:none;opacity:1}}
+
+.mini{display:flex;flex-direction:column;align-items:center;gap:0;margin:2px auto 0}
+.mini svg{width:84px;height:24px;display:block;animation:drop .35s backwards}
+@keyframes drop{from{transform:translateY(-24px);opacity:0}}
+
+/* results */
+.res{text-align:center;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:24px 18px}
+.res .big{font:64px/1 var(--display);color:var(--crust-deep)}
+.mist{text-align:left;margin-top:16px;display:grid;gap:10px}
+.mist div{border-top:1px solid var(--line);padding-top:10px}
+.mist .r{font-weight:700}
+.resbtns{display:grid;gap:10px;margin-top:18px}
+
+/* drawers */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(59,36,22,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{background:var(--paper);width:100%;max-width:760px;max-height:88vh;overflow:auto;border-radius:22px 22px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .25s}
+@keyframes up{from{transform:translateY(40px);opacity:.5}}
+.sheet .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+.sheet .top h3{font:26px/1 var(--display);color:var(--crust-deep)}
+.words{display:grid;gap:8px}
+.w{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.w .e{font-weight:700;font-size:17px}
+.w .r{color:var(--ink-soft)}
+.w .x{grid-column:1/-1;font-size:14px;font-style:italic;color:var(--ink-soft)}
+.w button{grid-row:1/3;grid-column:2;border:0;background:#fff4d8;border-radius:10px;width:44px;height:44px;font-size:18px}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="bar">
+    <button class="logo" id="homeBtn" aria-label="На главную">SVOMPT <small>sandwich</small></button>
+    <button class="ibtn" id="ruleBtn" aria-label="Правило">🥪<span class="lbl">Правило</span></button>
+    <button class="ibtn" id="wordsBtn" aria-label="Слова">📖<span class="lbl">Слова</span></button>
+    <button class="ibtn" id="soundBtn" aria-label="Звук">🔊</button>
+  </div>
+  <main id="app"></main>
+</div>
+<div class="actions" id="actions" hidden><div class="in" id="actIn"></div></div>
+<canvas id="confetti"></canvas>
+
+<template id="posterTpl">
+  <div class="poster">
+    <div class="eyebrow">Порядок слов в английском</div>
+    <h2>Собери сэндвич: S-V-O-M-P-T</h2>
+    <p class="lead">В английском предложении части стоят строго по очереди, как слои в сэндвиче. Сверху вниз:</p>
+    <div class="stack" id="stackRows"></div>
+    <div class="example">
+      <div class="eyebrow">Пример</div>
+      <div class="row">
+        <span class="chip k-S">Tom</span><span class="chip k-V">cooked</span><span class="chip k-O">pasta</span><span class="chip k-M">carefully</span><span class="chip k-P">in the kitchen</span><span class="chip k-T">yesterday.</span>
+      </div>
+      <p class="small" style="margin:8px 0 0">Том вчера на кухне аккуратно приготовил пасту.</p>
+    </div>
+    <div class="tip"><b>Важно:</b> не во всех предложениях есть все 6 слоёв. Но те, что есть, идут в этом порядке. Глагол всегда сразу после подлежащего. «Когда?» можно поставить и в самое начало: <i>Yesterday Tom cooked pasta.</i></div>
+  </div>
+</template>
+
+<div class="sheet" id="sheet" hidden><div class="box" id="sheetBox" role="dialog" aria-modal="true"></div></div>
+
+<script>
+/* ---------- data ---------- */
+const LAYERS={
+  S:{en:"subject",ru:"подлежащее",q:"кто? что?",svg:`<path d="M6 44 Q6 8 50 8 Q94 8 94 44 Z" fill="#e2a043"/><path d="M6 44 Q6 30 50 30 Q94 30 94 44Z" fill="#d18c31" opacity=".35"/><g fill="#fff6dc"><ellipse cx="34" cy="18" rx="2.4" ry="1.4"/><ellipse cx="50" cy="14" rx="2.4" ry="1.4"/><ellipse cx="64" cy="20" rx="2.4" ry="1.4"/><ellipse cx="44" cy="25" rx="2.4" ry="1.4"/><ellipse cx="74" cy="28" rx="2.4" ry="1.4"/><ellipse cx="24" cy="30" rx="2.4" ry="1.4"/></g>`},
+  V:{en:"verb",ru:"сказуемое",q:"что делает? что сделал?",svg:`<path d="M10 28 C4 16 22 8 34 12 C44 3 66 5 72 12 C88 8 98 22 90 32 C94 42 70 46 56 42 C40 48 14 44 10 28Z" fill="#fffdf6" stroke="#e6d8bc" stroke-width="1.5"/><circle cx="50" cy="26" r="11" fill="#f2a516"/><circle cx="46" cy="22" r="3" fill="#ffd56a"/>`},
+  O:{en:"object",ru:"дополнение",q:"что? кого? о чём?",svg:`<rect x="6" y="13" width="88" height="24" rx="12" fill="#6b3a20"/><g stroke="#3e2010" stroke-width="2.5" stroke-linecap="round"><path d="M22 20 L34 30"/><path d="M40 18 L54 32"/><path d="M60 18 L74 32"/></g>`},
+  M:{en:"manner",ru:"образ действия",q:"как?",svg:`<path d="M4 15 L96 15 L93 27 L82 27 L80 37 L74 27 L32 27 L29 39 L24 27 L7 27Z" fill="#f6c437"/><circle cx="60" cy="21" r="2" fill="#e9ad1f"/><circle cx="40" cy="20" r="1.6" fill="#e9ad1f"/>`},
+  P:{en:"place",ru:"место",q:"где?",svg:`<g><circle cx="28" cy="25" r="16" fill="#e0412f"/><circle cx="28" cy="25" r="11" fill="#f26a52"/><circle cx="50" cy="25" r="16" fill="#e0412f"/><circle cx="50" cy="25" r="11" fill="#f26a52"/><circle cx="72" cy="25" r="16" fill="#e0412f"/><circle cx="72" cy="25" r="11" fill="#f26a52"/></g><g fill="#fde2a8"><circle cx="25" cy="22" r="1.6"/><circle cx="31" cy="28" r="1.6"/><circle cx="47" cy="22" r="1.6"/><circle cx="53" cy="28" r="1.6"/><circle cx="69" cy="22" r="1.6"/><circle cx="75" cy="28" r="1.6"/></g>`},
+  T:{en:"time",ru:"время",q:"когда?",svg:`<path d="M6 12 H94 V30 Q94 40 84 40 H16 Q6 40 6 30Z" fill="#d8a066"/><rect x="6" y="12" width="88" height="7" rx="3" fill="#b97d40"/>`}
+};
+const ORDER=["S","V","O","M","P","T"];
+
+const ITEMS=[
+ {id:1,ru:[["Вчера","T"],["в музее","P"],["Анна","S"],["внимательно","M"],["рассматривала","V"],["произведения искусства","O"]],
+  en:{S:["Anna"],V:["looked at"],O:["the works of art","works of art"],M:["carefully"],P:["in the museum","at the museum"],T:["yesterday"]},
+  also:["anna looked carefully at the works of art in the museum yesterday","anna looked carefully at works of art in the museum yesterday","yesterday anna looked carefully at the works of art in the museum"]},
+ {id:2,ru:[["Мой брат","S"],["быстро","M"],["приготовил","V"],["ужин","O"],["на кухне","P"],["вечером","T"]],
+  en:{S:["My brother"],V:["prepared","made","cooked"],O:["dinner","the dinner"],M:["quickly"],P:["in the kitchen"],T:["in the evening","this evening"]}},
+ {id:3,ru:[["Сегодня","T"],["в школе","P"],["дети","S"],["вели себя","V"],["хорошо","M"]],
+  en:{S:["The children","Children","The kids","Kids"],V:["behaved"],M:["well"],P:["at school","in school"],T:["today"]}},
+ {id:4,ru:[["Утром","T"],["в бассейне","P"],["кто-то","S"],["тихо","M"],["взял","V"],["моё полотенце","O"]],
+  en:{S:["Someone","Somebody"],V:["took"],O:["my towel"],M:["quietly"],P:["at the swimming pool","in the swimming pool","at the pool","in the pool"],T:["in the morning","this morning"]}},
+ {id:5,ru:[["Во время обеда","T"],["Том","S"],["громко","M"],["жаловался","V"],["на еду","O"],["в кафе","P"]],
+  en:{S:["Tom"],V:["complained"],O:["about the food"],M:["loudly"],P:["in the café","at the café"],T:["during lunch"]},extra:["SVMOPT"]},
+ {id:6,ru:[["Вчера вечером","T"],["в интернете","P"],["я","S"],["узнала","V"],["о последних событиях","O"]],
+  en:{S:["I"],V:["found out"],O:["about the recent events","about recent events"],P:["on the internet","online"],T:["last night","yesterday evening"]}},
+ {id:7,ru:[["На прошлой неделе","T"],["мы","S"],["спокойно","M"],["отдыхали","V"],["на пляже","P"]],
+  en:{S:["We"],V:["rested","were resting"],M:["quietly","calmly","peacefully"],P:["on the beach","at the beach"],T:["last week"]}},
+ {id:8,ru:[["Наша команда","S"],["легко","M"],["выиграла","V"],["соревнование","O"],["в Берлине","P"],["в прошлом году","T"]],
+  en:{S:["Our team"],V:["won"],O:["the competition","a competition"],M:["easily"],P:["in Berlin"],T:["last year"]}},
+ {id:9,ru:[["В субботу","T"],["папа","S"],["аккуратно","M"],["поменял","V"],["колёса машины","O"],["в гараже","P"]],
+  en:{S:["Dad","My dad","My father","Father"],V:["changed"],O:["the car's wheels","the wheels of the car","the car wheels"],M:["carefully"],P:["in the garage"],T:["on Saturday"]}},
+ {id:10,ru:[["В прошлом месяце","T"],["мы","S"],["увидели","V"],["картины Пикассо","O"],["в галерее","P"]],
+  en:{S:["We"],V:["saw"],O:["paintings by Picasso","the paintings by Picasso","pictures by Picasso","the pictures by Picasso"],P:["in the gallery","at the gallery"],T:["last month"]}},
+ {id:11,ru:[["Вчера","T"],["на уроке","P"],["мы","S"],["изучали","V"],["наречия частоты","O"]],
+  en:{S:["We"],V:["studied","learned","learnt"],O:["adverbs of frequency","the adverbs of frequency"],P:["in class","in the lesson","at the lesson"],T:["yesterday"]}},
+ {id:12,ru:[["Во время фильма","T"],["кто-то","S"],["громко","M"],["разговаривал","V"],["в кинотеатре","P"]],
+  en:{S:["Someone","Somebody"],V:["talked","was talking","spoke"],M:["loudly"],P:["in the cinema","at the cinema"],T:["during the film","during the movie"]}},
+ {id:13,ru:[["После работы","T"],["моя сестра","S"],["медленно","M"],["ела","V"],["свою еду","O"],["дома","P"]],
+  en:{S:["My sister"],V:["ate","was eating"],O:["her meal","her food"],M:["slowly"],P:["at home"],T:["after work"]}},
+ {id:14,ru:[["Сегодня утром","T"],["в магазине","P"],["покупатель","S"],["сердито","M"],["жаловался","V"],["менеджеру","O"]],
+  en:{S:["The customer","A customer","The buyer","A buyer"],V:["complained"],O:["to the manager"],M:["angrily"],P:["in the shop","in the store","at the shop","at the store"],T:["this morning"]},extra:["SVMOPT"]},
+ {id:15,ru:[["Вчера","T"],["в библиотеке","P"],["студенты","S"],["внимательно","M"],["готовили","V"],["проект","O"]],
+  en:{S:["The students","Students"],V:["prepared","were preparing"],O:["the project","a project","their project"],M:["carefully"],P:["in the library","at the library"],T:["yesterday"]}},
+ {id:16,ru:[["Это слово","S"],["означает","V"],["«полотенце»","O"]],
+  en:{S:["This word"],V:["means"],O:["\"towel\"","towel"]}}
+];
+
+const WORDS=[
+ ["someone","кто-то","Someone took my towel."],["competition","соревнование","Our team won the competition."],
+ ["works of art","произведения искусства","Anna looked at the works of art."],["to rest","отдыхать","We rested on the beach."],
+ ["during","во время","Someone talked during the film."],["to find out","узнать","I found out about the recent events."],
+ ["recent events","последние события","I read about recent events online."],["by","(автор) кого-то: картины Пикассо","We saw paintings by Picasso."],
+ ["to prepare","готовить, подготовить","My brother prepared dinner."],["meal","приём пищи, еда","My sister ate her meal slowly."],
+ ["wheels","колёса","Dad changed the car's wheels."],["to behave","вести себя","The children behaved well."],
+ ["to complain","жаловаться","Tom complained about the food."],["frequency","частота","We studied adverbs of frequency."],
+ ["to mean","означать","This word means \"towel\"."],["towel","полотенце","Someone took my towel."]
+];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>s.toLowerCase().replace(/[’`´]/g,"'").replace(/é/g,"e").replace(/[«»"“”.,!?;:]/g," ").replace(/\s+/g," ").trim();
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const keysOf=it=>ORDER.filter(k=>it.en[k]);
+function ordersOf(it){
+  const base=keysOf(it);const out=[base.join("")];
+  if(it.en.T&&base[0]!=="T") out.push("T"+base.filter(k=>k!=="T").join(""));
+  (it.extra||[]).forEach(o=>{o=o.split("").filter(k=>it.en[k]).join("");out.push(o);if(it.en.T)out.push("T"+o.replace("T",""))});
+  return [...new Set(out)];
+}
+function accepted(it){
+  const set=new Set((it.also||[]).map(norm));
+  ordersOf(it).forEach(o=>{
+    let acc=[""];
+    o.split("").forEach(k=>{const n=[];acc.forEach(a=>it.en[k].forEach(v=>n.push(a+" "+v)));acc=n});
+    acc.forEach(a=>set.add(norm(a)));
+  });
+  return set;
+}
+const mainText=it=>{const k=keysOf(it);return k.map(x=>it.en[x][0]).join(" ")+(it.id===16?".":".")};
+const chipsHTML=it=>keysOf(it).map((k,i,a)=>`<span class="chip k-${k}"><i>${k}</i>${esc(it.en[k][0])}${i===a.length-1?".":""}</span>`).join("");
+const miniSandwich=it=>`<div class="mini">${keysOf(it).map((k,i)=>`<svg viewBox="0 0 100 50" style="animation-delay:${i*90}ms" aria-hidden="true">${LAYERS[k].svg}</svg>`).join("")}</div>`;
+
+/* ---------- storage ---------- */
+const KEY="svompt-sandwich-v1";
+let store={best:{1:null,2:null},sound:true,session:null};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s)store=Object.assign(store,s)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+
+/* ---------- sound ---------- */
+let actx;
+function beep(type){
+  if(!store.sound||type==="tap")return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const notes=type==="ok"?[660,880]:type==="win"?[523,659,784,1047]:[220,180];
+    notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=type==="bad"?"square":"triangle";o.frequency.value=f;
+      const t=actx.currentTime+i*0.11;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(type==="bad"?0.05:0.12,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+      o.connect(g).connect(actx.destination);o.start(t);o.stop(t+0.22)});
+  }catch(e){}
+}
+function speak(t){
+  try{if(!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.9;
+    const v=speechSynthesis.getVoices().find(v=>/^en(-|_)(GB|US)/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}
+}
+function setSoundIcon(){$("#soundBtn").textContent=store.sound?"🔊":"🔇"}
+
+/* ---------- poster ---------- */
+function posterNode(){
+  const n=$("#posterTpl").content.cloneNode(true);
+  n.querySelector("#stackRows").innerHTML=ORDER.map(k=>`<div class="layer"><svg viewBox="0 0 100 50" aria-hidden="true">${LAYERS[k].svg}</svg><div class="let c-${k}">${k}</div><div class="what"><div class="en c-${k}">${LAYERS[k].en}</div><div class="ru"><b>${LAYERS[k].ru}</b> — ${LAYERS[k].q}</div></div></div>`).join("");
+  return n;
+}
+
+/* ---------- actions bar ---------- */
+function setActions(html){const a=$("#actions");if(!html){a.hidden=true;$("#actIn").innerHTML="";return}a.hidden=false;$("#actIn").innerHTML=html}
+
+/* ---------- home ---------- */
+function home(){
+  setActions(null);
+  app.innerHTML="";
+  app.appendChild(posterNode());
+  const b1=store.best[1],b2=store.best[2];
+  const s=store.session;
+  const box=document.createElement("div");
+  box.innerHTML=`
+   ${s&&s.pos<s.queue.length?`<button class="resume" id="resume">▶ Продолжить: уровень ${s.mode} (${s.pos+1} из ${s.queue.length})</button>`:""}
+   <div class="levels">
+     <button class="lvl" data-l="1"><span class="eyebrow">Уровень 1</span><span class="t">Собери сэндвич</span><span class="d">Видишь предложение на русском. Нажимай на готовые части английского предложения в правильном порядке.</span>${b1!=null?`<span class="s">Лучший результат: ${b1} из 16</span>`:""}</button>
+     <button class="lvl" data-l="2"><span class="eyebrow">Уровень 2</span><span class="t">Переведи сам</span><span class="d">Напиши перевод сам. Игра проверит слова и порядок и подскажет, где ошибка.</span>${b2!=null?`<span class="s">Лучший результат: ${b2} из 16</span>`:""}</button>
+   </div>`;
+  app.appendChild(box);
+  app.querySelectorAll(".lvl").forEach(b=>b.onclick=()=>start(+b.dataset.l));
+  const r=$("#resume");if(r)r.onclick=()=>render();
+  window.scrollTo(0,0);
+}
+
+/* ---------- session ---------- */
+function start(mode,ids){
+  const q=ids||shuffle(ITEMS.map(i=>i.id));
+  store.session={mode,queue:q,pos:0,res:{},retry:[],repeatRound:!!ids,total:q.length};
+  save();render();
+}
+const cur=()=>ITEMS.find(i=>i.id===store.session.queue[store.session.pos]);
+
+function progressHTML(){
+  const s=store.session;
+  return `<div class="prog">${s.queue.map((id,i)=>{let c="";if(i===s.pos)c="now";else if(i<s.pos)c=s.res[id+"_"+i]?"ok":"miss";return `<span class="${c}"></span>`}).join("")}</div>`;
+}
+
+let tries=0,hintOn=false;
+function render(){
+  const s=store.session;if(!s){home();return}
+  if(s.pos>=s.queue.length){results();return}
+  tries=0;hintOn=false;
+  const it=cur();
+  const ruHTML=it.ru.map(([w,k])=>`<span data-k="${k}">${esc(w)}</span>`).join(" ")+".";
+  app.innerHTML=`${progressHTML()}
+   <div class="meta"><span>Уровень ${s.mode} · ${s.mode===1?"Собери сэндвич":"Переведи сам"}</span><span>${s.pos+1} / ${s.queue.length}</span></div>
+   <div class="task">
+     <div class="eyebrow">Переведи на английский</div>
+     <div class="ru" id="ru">${ruHTML}</div>
+     <button class="hintbtn" id="hint">💡 Подсказка: раскрась по слоям</button>
+     <div class="legend" id="legend" hidden>${keysOf(it).map(k=>`<span class="chip k-${k}">${k} · ${LAYERS[k].q}</span>`).join("")}</div>
+     ${s.mode===1?`<div class="answer" id="answer"></div><div class="bank" id="bank"></div>`
+       :`<label for="typed" class="small" style="display:block;margin-top:14px">Твой перевод:</label><textarea id="typed" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Type your sentence here…"></textarea><div class="small">Нажми «Проверить» или Enter.</div>`}
+     <div id="fb"></div>
+   </div>`;
+  $("#hint").onclick=toggleHint;
+  if(s.mode===1)setupTiles(it);else setupTyped(it);
+  window.scrollTo(0,0);
+}
+function toggleHint(){
+  hintOn=!hintOn;
+  document.querySelectorAll("#ru span").forEach(sp=>{sp.className=hintOn?"k-"+sp.dataset.k:""});
+  $("#legend").hidden=!hintOn;
+  $("#hint").textContent=hintOn?"💡 Убрать подсказку":"💡 Подсказка: раскрась по слоям";
+}
+
+/* ---------- level 1: tiles ---------- */
+let chosen=[];
+function setupTiles(it){
+  chosen=[];
+  const tiles=shuffle(keysOf(it).map(k=>({k,t:it.en[k][0]})));
+  // avoid giving the correct order straight away
+  if(tiles.map(t=>t.k).join("")===keysOf(it).join("")&&tiles.length>1)tiles.push(tiles.shift());
+  $("#bank").innerHTML=tiles.map((t,i)=>`<button class="tile" data-i="${i}" data-k="${t.k}">${esc(t.t)}</button>`).join("");
+  $("#bank").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
+    if(b.classList.contains("used")||locked)return;
+    b.classList.add("used");chosen.push({i:b.dataset.i,k:b.dataset.k,t:b.textContent});drawAnswer();beep("tap");
+  });
+  locked=false;drawAnswer();
+}
+let locked=false;
+function drawAnswer(){
+  const a=$("#answer");
+  a.innerHTML=chosen.map((c,j)=>`<button class="tile" data-j="${j}">${esc(c.t)}</button>`).join("");
+  a.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
+    if(locked)return;const c=chosen.splice(+b.dataset.j,1)[0];
+    $(`#bank .tile[data-i="${c.i}"]`).classList.remove("used");drawAnswer();
+  });
+  const total=$("#bank").children.length;
+  setActions(`<button class="btn ghost" id="reset">↺</button><button class="btn main" id="check" ${chosen.length<total?"disabled":""}>Проверить</button>`);
+  $("#reset").onclick=()=>{if(locked)return;chosen=[];$("#bank").querySelectorAll(".tile").forEach(t=>t.classList.remove("used"));drawAnswer()};
+  $("#check").onclick=checkTiles;
+}
+function checkTiles(){
+  const it=cur();const seq=chosen.map(c=>c.k).join("");
+  const orders=ordersOf(it);tries++;
+  const tiles=[...$("#answer").children];
+  if(orders.includes(seq)){
+    locked=true;
+    tiles.forEach((t,j)=>{t.classList.add("colored","k-"+chosen[j].k)});
+    const tFront=seq[0]==="T"&&keysOf(it)[0]!=="T";
+    const altOrder=!tFront&&seq!==keysOf(it).join("");
+    succeed(it,tries===1,tFront?"Время можно ставить и в начало. Но по схеме SVOMPT оно идёт в конце:":altOrder?"Так тоже можно! А по схеме SVOMPT вот так:":null,chosen.map(c=>c.t).join(" ")+".");
+  }else{
+    beep("bad");
+    const best=keysOf(it).join("");
+    tiles.forEach((t,j)=>{if(chosen[j].k!==best[j]){t.classList.remove("wrong");void t.offsetWidth;t.classList.add("wrong")}});
+    if(tries<2){
+      $("#fb").innerHTML=`<div class="fb warn"><div class="h">Почти! Попробуй ещё раз</div><div>Красным отмечены части не на своём месте. Вспомни сэндвич: <b>S → V → O → M → P → T</b>. Нажми на часть в ответе, чтобы вернуть её вниз.</div></div>`;
+    }else{
+      locked=true;fail(it);
+    }
+  }
+}
+
+/* ---------- level 2: typed ---------- */
+function setupTyped(it){
+  const ta=$("#typed");
+  setActions(`<button class="btn main" id="check" disabled>Проверить</button>`);
+  ta.oninput=()=>{$("#check").disabled=!ta.value.trim()};
+  ta.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(ta.value.trim())checkTyped()}};
+  $("#check").onclick=checkTyped;
+  setTimeout(()=>{try{ta.focus({preventScroll:true})}catch(e){}},50);
+}
+function hasPart(ans,alts){return alts.some(v=>(" "+ans+" ").includes(" "+norm(v)+" "))}
+function checkTyped(){
+  const it=cur();const ta=$("#typed");const ans=norm(ta.value);if(!ans)return;
+  tries++;
+  if(accepted(it).has(ans)){
+    ta.readOnly=true;
+    const first=ans.split(" ")[0];const tFront=it.en.T&&keysOf(it)[0]!=="T"&&it.en.T.some(v=>norm(v).split(" ")[0]===first&&ans.startsWith(norm(v)));
+    succeed(it,tries===1,tFront?"Время можно ставить и в начало. Но по схеме SVOMPT оно идёт в конце:":null,ta.value.trim());
+    return;
+  }
+  beep("bad");
+  const missing=keysOf(it).filter(k=>!hasPart(ans,it.en[k]));
+  if(tries<2){
+    let msg;
+    if(!missing.length)msg=`Все части на месте, но <b>порядок</b> другой. Проверь по схеме S → V → O → M → P → T.`;
+    else msg=`Проверь эти части: ${missing.map(k=>`<span class="chip k-${k}">${k} · ${LAYERS[k].q}</span>`).join(" ")}<br><span class="small">Может быть, опечатка, другое слово или пропущен артикль.</span>`;
+    $("#fb").innerHTML=`<div class="fb warn"><div class="h">Почти! Исправь и проверь ещё раз</div><div>${msg}</div></div>`;
+  }else{
+    ta.readOnly=true;fail(it,true);
+  }
+}
+
+/* ---------- outcomes ---------- */
+function record(ok){const s=store.session;s.res[s.queue[s.pos]+"_"+s.pos]=ok;if(!ok&&!s.retry.includes(s.queue[s.pos]))s.retry.push(s.queue[s.pos]);save()}
+function succeed(it,first,note,said){
+  beep("ok");record(first);
+  $("#fb").innerHTML=`<div class="fb good">
+     <div class="h">${first?"Верно! ⭐":"Верно!"}</div>
+     ${note?`<div>${note}</div><div class="row">${chipsHTML(it)}</div>`:`<div class="row">${chipsHTML(it)}</div>`}
+     ${miniSandwich(it)}
+     <div class="links"><button id="say">🔊 Послушать</button></div>
+   </div>`;
+  $("#say").onclick=()=>speak(mainText(it));
+  speak(said||mainText(it));
+  nextBtn();
+}
+function fail(it,typed){
+  record(false);
+  $("#fb").innerHTML=`<div class="fb bad">
+     <div class="h">Правильный ответ</div>
+     <div class="row">${chipsHTML(it)}</div>
+     <div class="small">Это предложение вернётся ещё раз в конце.</div>
+     <div class="links"><button id="say">🔊 Послушать</button>${typed?`<button id="mine">✔ Мой вариант тоже верный</button>`:""}</div>
+   </div>`;
+  $("#say").onclick=()=>speak(mainText(it));
+  if(typed)$("#mine").onclick=()=>{const s=store.session;s.res[s.queue[s.pos]+"_"+s.pos]=true;s.retry=s.retry.filter(x=>x!==s.queue[s.pos]);save();$("#mine").outerHTML="<span class='small'>Засчитано ✔</span>"};
+  nextBtn();
+}
+function nextBtn(){
+  setActions(`<button class="btn main okb" id="next">Дальше →</button>`);
+  $("#next").onclick=next;
+  setTimeout(()=>{const f=$("#fb");if(f&&f.getBoundingClientRect().bottom>innerHeight-90)f.scrollIntoView({behavior:"smooth",block:"center"})},60);
+}
+function next(){
+  const s=store.session;
+  s.pos++;
+  // wrong items come back once at the end of the round
+  if(s.pos>=s.queue.length&&s.retry.length&&!s.retried){s.retried=true;s.queue=s.queue.concat(shuffle(s.retry));s.retry=[]}
+  save();render();
+}
+
+/* ---------- results ---------- */
+function results(){
+  const s=store.session;
+  const firstRound=s.queue.slice(0,s.total);
+  const okFirst=firstRound.filter((id,i)=>s.res[id+"_"+i]).length;
+  const wrong=firstRound.filter((id,i)=>!s.res[id+"_"+i]);
+  if(!s.repeatRound&&s.total===16){store.best[s.mode]=Math.max(store.best[s.mode]??0,okFirst)}
+  store.session=null;save();
+  beep("win");if(okFirst>=s.total*0.6)confetti();
+  const msg=okFirst===s.total?"Идеальный сэндвич! 🥪":okFirst>=s.total*0.75?"Очень вкусно! Почти без ошибок.":okFirst>=s.total*0.5?"Хорошо! Ещё немного практики.":"Повтори правило и попробуй ещё раз.";
+  app.innerHTML=`<div class="res">
+     <div class="eyebrow">Уровень ${s.mode}${s.repeatRound?" · работа над ошибками":""}</div>
+     <div class="big">${okFirst} / ${s.total}</div>
+     <div style="font-weight:700;font-size:18px">${msg}</div>
+     <div class="small">с первой попытки</div>
+     ${wrong.length?`<div class="mist"><div class="eyebrow">Были ошибки здесь</div>${wrong.map(id=>{const it=ITEMS.find(i=>i.id===id);return `<div><div class="r">${esc(it.ru.map(x=>x[0]).join(" "))}.</div><div class="row" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${chipsHTML(it)}</div></div>`}).join("")}</div>`:""}
+     <div class="resbtns">
+       ${wrong.length?`<button class="btn main" id="rep">Повторить ошибки (${wrong.length})</button>`:""}
+       ${s.mode===1?`<button class="btn ${wrong.length?"ghost":"main"}" id="l2">Перейти на уровень 2 →</button>`:""}
+       <button class="btn ghost" id="again">Пройти уровень ${s.mode} заново</button>
+       <button class="btn ghost" id="toHome">На главную</button>
+     </div></div>`;
+  setActions(null);
+  const rep=$("#rep");if(rep)rep.onclick=()=>start(s.mode,shuffle(wrong));
+  const l2=$("#l2");if(l2)l2.onclick=()=>start(2);
+  $("#again").onclick=()=>start(s.mode);$("#toHome").onclick=home;
+  window.scrollTo(0,0);
+}
+
+/* ---------- sheets ---------- */
+function openSheet(title,node){
+  const box=$("#sheetBox");box.innerHTML=`<div class="top"><h3>${title}</h3><button class="ibtn" id="closeSheet">✕ Закрыть</button></div>`;
+  box.appendChild(node);$("#sheet").hidden=false;$("#closeSheet").onclick=closeSheet;
+}
+function closeSheet(){$("#sheet").hidden=true}
+$("#sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+$("#ruleBtn").onclick=()=>{const d=document.createElement("div");d.appendChild(posterNode());openSheet("Правило",d)};
+$("#wordsBtn").onclick=()=>{
+  const d=document.createElement("div");d.className="words";
+  d.innerHTML=WORDS.map((w,i)=>`<div class="w"><div class="e">${esc(w[0])}</div><button data-i="${i}" aria-label="Послушать ${esc(w[0])}">🔊</button><div class="r">${esc(w[1])}</div><div class="x">${esc(w[2])}</div></div>`).join("");
+  d.querySelectorAll("button").forEach(b=>b.onclick=()=>speak(WORDS[b.dataset.i][0].replace(/^to /,"")));
+  openSheet("Слова урока",d);
+};
+$("#soundBtn").onclick=()=>{store.sound=!store.sound;save();setSoundIcon()};
+$("#homeBtn").onclick=home;
+
+/* ---------- confetti ---------- */
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const c=$("#confetti"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const cols=["#eaa53c","#ffe17d","#7a4126","#a8d466","#e5533d","#ead2a9"];
+  const ps=Array.from({length:110},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,w:6+Math.random()*8,h:4+Math.random()*6,vy:2+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*6,vr:-.1+Math.random()*.2,c:cols[Math.random()*6|0]}));
+  let f=0;(function loop(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});
+    if(++f<200)requestAnimationFrame(loop);else x.clearRect(0,0,c.width,c.height)})();
+}
+
+setSoundIcon();
+home();
+</script>
+</html>
